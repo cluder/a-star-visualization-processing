@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 import processing.core.PApplet;
 
@@ -12,8 +13,11 @@ import processing.core.PApplet;
  * https://www.youtube.com/watch?v=aKYlikFAV4k
  */
 public class AStarMain extends PApplet {
-	static final int ROWS = 20;
+	static final int ROWS = 15;
 	static final int COLS = 15;
+
+	boolean diagonalMoveAllowed = false;
+	int numBlockedNodes = 100;
 
 	Node[][] grid = new Node[ROWS][COLS];
 
@@ -23,8 +27,6 @@ public class AStarMain extends PApplet {
 
 	Node start;
 	Node end;
-
-	boolean diagonalMoveAllowed = true;
 
 	public static void main(String[] args) {
 		PApplet.main(AStarMain.class, args);
@@ -37,7 +39,7 @@ public class AStarMain extends PApplet {
 
 	@Override
 	public void setup() {
-		frameRate(25);
+		frameRate(10);
 
 		// initialize grid
 		for (int row = 0; row < ROWS; row++) {
@@ -50,6 +52,15 @@ public class AStarMain extends PApplet {
 		// initialize start / end
 		start = grid[0][0];
 		end = grid[ROWS - 1][COLS - 1];
+
+		Random r = new Random();
+		for (int i = 0; i < numBlockedNodes; i++) {
+			final Node n = grid[r.nextInt(ROWS)][r.nextInt(COLS)];
+			// do not block start or end
+			if (n != start && n != end) {
+				n.setBlocked(true);
+			}
+		}
 
 		// initialize the open set (closed set is empty)
 		openSet.add(start);
@@ -64,14 +75,18 @@ public class AStarMain extends PApplet {
 
 		for (int row = max(r - 1, 0); row <= min(r + 1, ROWS - 1); row++) {
 			for (int col = max(c - 1, 0); col <= min(c + 1, COLS - 1); col++) {
-				if (closedSet.contains(grid[row][col])) {
+				final Node n = grid[row][col];
+				if (n.blocked) {
+					continue;
+				}
+				if (closedSet.contains(n)) {
 					continue;
 				}
 				if (diagonalMoveAllowed == false && abs(r - row) == 1 && abs(c - col) == 1) {
 					// skip diagonal neighbors
-//					System.out.println("skipping diagnoal neighbor: " + row + "/" + col);
+					continue;
 				} else {
-					neighbors.add(grid[row][col]);
+					neighbors.add(n);
 				}
 			}
 		}
@@ -84,6 +99,7 @@ public class AStarMain extends PApplet {
 	 */
 	@Override
 	public void draw() {
+		boolean noSolution = false;
 		background(0);
 
 		if (openSet.isEmpty() == false) {
@@ -142,7 +158,9 @@ public class AStarMain extends PApplet {
 
 		} else {
 			// openset is empty - finished / no solution
-			System.out.println("openset empty");
+			System.out.println("openset empty - no solution found");
+			noSolution = true;
+			noLoop();
 		}
 
 		// draw nodes
@@ -154,22 +172,30 @@ public class AStarMain extends PApplet {
 
 		// draw open / closed sets
 		for (Node n : openSet) {
-			n.draw(this, Color.WHITE);
+			n.draw(this, new Color(0, 120, 255));
 		}
 		for (Node n : closedSet) {
 			n.draw(this, Color.RED);
 		}
 
-		// draw solution
-		Node prev = null;
-		for (Node n : solution) {
-			if (prev != null) {
-				strokeWeight(1);
-				stroke(255, 255, 0);
-				line(prev.posX, prev.posY, n.posX, n.posY);
+		if (noSolution == false) {
+			// draw solution
+			Node prev = null;
+			for (Node n : solution) {
+				if (prev != null) {
+					strokeWeight(1);
+					stroke(255, 255, 0);
+					line(prev.posX, prev.posY, n.posX, n.posY);
+				}
+				n.draw(this, Color.YELLOW);
+				prev = n;
 			}
-			n.draw(this, Color.YELLOW);
-			prev = n;
+		}
+		if (openSet.isEmpty()) {
+			textSize(50);
+			textAlign(CENTER, CENTER);
+			stroke(255, 100);
+			text("No solution found", width / 2, height / 2);
 		}
 
 	}
