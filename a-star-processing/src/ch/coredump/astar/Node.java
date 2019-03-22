@@ -11,7 +11,9 @@ public class Node {
 	int col;
 	float posX;
 	float posY;
+	boolean blocked;
 
+	float size = 10;
 	// cost
 	float f = 0;
 	// cost from start
@@ -29,14 +31,25 @@ public class Node {
 	}
 
 	public void draw(PApplet p, Color c) {
+		final int cellWidth = p.width / AStarMain.ROWS;
+		final int cellheight = p.height / AStarMain.COLS;
+
 		p.push();
 
-		p.strokeWeight(2);
-		p.stroke(c.getRGB());
-		p.noFill();
-//		p.fill(c.getRGB());
-		p.shapeMode(PConstants.CENTER);
-		p.circle(posX, posY, 10);
+		p.rectMode(PConstants.CENTER);
+		if (blocked) {
+			// simply a black rectangle
+			p.fill(170);
+			p.stroke(90);
+			p.rect(posX, posY, cellWidth * 0.9f, cellheight * 0.9f);
+		} else {
+//			colored circle
+			p.strokeWeight(2);
+			p.stroke(c.getRGB());
+//			p.noFill();
+			p.fill(c.getRGB(), 55);
+			p.circle(posX, posY, cellheight * 0.3f);
+		}
 
 		p.pop();
 	}
@@ -59,6 +72,10 @@ public class Node {
 
 	public int getCol() {
 		return col;
+	}
+
+	public void setBlocked(boolean blocked) {
+		this.blocked = blocked;
 	}
 
 	@Override
