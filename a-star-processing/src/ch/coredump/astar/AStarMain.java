@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 
 import processing.core.PApplet;
 
@@ -13,13 +12,13 @@ import processing.core.PApplet;
  * https://www.youtube.com/watch?v=aKYlikFAV4k
  */
 public class AStarMain extends PApplet {
-	static final int ROWS = 15;
-	static final int COLS = 15;
+	static final int ROWS = 22;
+	static final int COLS = 22;
 
-	boolean diagonalMoveAllowed = false;
-	int numBlockedNodes = 100;
+	boolean diagonalMoveAllowed = true;
+	float blockChance = 0.4f; // 0.0 - 1.0
 
-	Node[][] grid = new Node[ROWS][COLS];
+	Node[][] grid;
 
 	List<Node> openSet = new ArrayList<>();
 	List<Node> closedSet = new ArrayList<>();
@@ -34,18 +33,30 @@ public class AStarMain extends PApplet {
 
 	@Override
 	public void settings() {
-		size(600, 600);
+		size(800, 600);
 	}
 
 	@Override
 	public void setup() {
 		frameRate(10);
 
+		initialize();
+	}
+
+	private void initialize() {
+		openSet = new ArrayList<>();
+		closedSet = new ArrayList<>();
+		solution = new ArrayList<>();
+
 		// initialize grid
+		grid = new Node[ROWS][COLS];
 		for (int row = 0; row < ROWS; row++) {
 			for (int col = 0; col < COLS; col++) {
 				// create Nodes and set positions
 				grid[row][col] = new Node(row, col, (col + 0.5f) * width / COLS, ((row + 0.5f) * height / ROWS));
+				if (random(1) < blockChance) {
+					grid[row][col].blocked = true;
+				}
 			}
 		}
 
@@ -53,17 +64,13 @@ public class AStarMain extends PApplet {
 		start = grid[0][0];
 		end = grid[ROWS - 1][COLS - 1];
 
-		Random r = new Random();
-		for (int i = 0; i < numBlockedNodes; i++) {
-			final Node n = grid[r.nextInt(ROWS)][r.nextInt(COLS)];
-			// do not block start or end
-			if (n != start && n != end) {
-				n.setBlocked(true);
-			}
-		}
+		start.blocked = false;
+		end.blocked = false;
 
 		// initialize the open set (closed set is empty)
 		openSet.add(start);
+
+		loop();
 	}
 
 	/**
@@ -148,13 +155,15 @@ public class AStarMain extends PApplet {
 			}
 
 			// track current solution
-			solution.clear();
-			Node n = current;
-			while (n.previous != null) {
-				solution.add(n);
-				n = n.previous;
+			if (noSolution == false) {
+				solution.clear();
+				Node n = current;
+				while (n.previous != null) {
+					solution.add(n);
+					n = n.previous;
+				}
+				solution.add(start);
 			}
-			solution.add(start);
 
 		} else {
 			// openset is empty - finished / no solution
@@ -166,7 +175,7 @@ public class AStarMain extends PApplet {
 		// draw nodes
 		for (int row = 0; row < ROWS; row++) {
 			for (int col = 0; col < COLS; col++) {
-				grid[row][col].draw(this, Color.darkGray);
+				grid[row][col].draw(this, new Color(250, 250, 250, 20));
 			}
 		}
 
@@ -178,18 +187,16 @@ public class AStarMain extends PApplet {
 			n.draw(this, Color.RED);
 		}
 
-		if (noSolution == false) {
-			// draw solution
-			Node prev = null;
-			for (Node n : solution) {
-				if (prev != null) {
-					strokeWeight(1);
-					stroke(255, 255, 0);
-					line(prev.posX, prev.posY, n.posX, n.posY);
-				}
-				n.draw(this, Color.YELLOW);
-				prev = n;
+		// draw solution
+		Node prev = null;
+		for (Node n : solution) {
+			if (prev != null) {
+				strokeWeight(1);
+				stroke(255, 255, 0);
+				line(prev.posX, prev.posY, n.posX, n.posY);
 			}
+			n.draw(this, Color.YELLOW);
+			prev = n;
 		}
 		if (openSet.isEmpty()) {
 			textSize(50);
@@ -212,5 +219,15 @@ public class AStarMain extends PApplet {
 	 */
 	private float heuristic(Node current, Node end) {
 		return dist(current.posX, current.posY, end.posX, end.posY);
+	}
+
+	@Override
+	public void keyPressed() {
+		if (key != ' ') {
+			return;
+		}
+		// reset everything
+		noLoop();
+		initialize();
 	}
 }

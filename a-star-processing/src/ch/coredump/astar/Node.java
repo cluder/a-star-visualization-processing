@@ -31,8 +31,8 @@ public class Node {
 	}
 
 	public void draw(PApplet p, Color c) {
-		final int cellWidth = p.width / AStarMain.ROWS;
-		final int cellheight = p.height / AStarMain.COLS;
+		final float cellWidth = p.width / AStarMain.ROWS;
+		final float cellheight = p.height / AStarMain.COLS;
 
 		p.push();
 
@@ -45,10 +45,10 @@ public class Node {
 		} else {
 //			colored circle
 			p.strokeWeight(2);
-			p.stroke(c.getRGB());
+			p.stroke(c.getRGB(), 100);
 //			p.noFill();
-			p.fill(c.getRGB(), 55);
-			p.circle(posX, posY, cellheight * 0.3f);
+			p.fill(c.getRGB(), 70);
+			p.circle(posX, posY, cellWidth / 2);
 		}
 
 		p.pop();
@@ -72,10 +72,6 @@ public class Node {
 
 	public int getCol() {
 		return col;
-	}
-
-	public void setBlocked(boolean blocked) {
-		this.blocked = blocked;
 	}
 
 	@Override
