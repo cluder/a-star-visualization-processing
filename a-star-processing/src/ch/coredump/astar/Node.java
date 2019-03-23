@@ -43,35 +43,13 @@ public class Node {
 			p.stroke(90);
 			p.rect(posX, posY, cellWidth * 0.9f, cellheight * 0.9f);
 		} else {
-//			colored circle
 			p.strokeWeight(2);
 			p.stroke(c.getRGB(), 100);
-//			p.noFill();
 			p.fill(c.getRGB(), 70);
 			p.circle(posX, posY, cellWidth / 2);
 		}
 
 		p.pop();
-	}
-
-	public float getF() {
-		return f;
-	}
-
-	public float getG() {
-		return g;
-	}
-
-	public float getH() {
-		return h;
-	}
-
-	public int getRow() {
-		return row;
-	}
-
-	public int getCol() {
-		return col;
 	}
 
 	@Override

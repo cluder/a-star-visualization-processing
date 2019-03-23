@@ -2,7 +2,6 @@ package ch.coredump.astar;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import processing.core.PApplet;
@@ -112,7 +111,7 @@ public class AStarMain extends PApplet {
 		if (openSet.isEmpty() == false) {
 			// Nodes in open set have to be checked
 			// find node with lowest f-score
-			Node current = openSet.stream().min(Comparator.comparing(Node::getF)).get();
+			Node current = getLowestFScore(openSet);
 
 			if (current == end) {
 				// finished
@@ -125,7 +124,7 @@ public class AStarMain extends PApplet {
 			openSet.remove(current);
 
 			// get neighbors of current, which are not in the closed Set
-			final List<Node> neighbors = getNeighbors(current.getRow(), current.getCol());
+			final List<Node> neighbors = getNeighbors(current.row, current.col);
 			for (Node n : neighbors) {
 				// calculate g score for neighbor (distance from current to neighbor)
 				float tempG = current.g + distanceToNeighbor(current, n);
@@ -136,7 +135,7 @@ public class AStarMain extends PApplet {
 					openSet.add(n);
 				} else {
 					// neighbor has already been visited
-					if (tempG < n.getG()) {
+					if (tempG < n.g) {
 						// new g is lower than existing
 						n.g = tempG;
 					} else {
@@ -179,6 +178,11 @@ public class AStarMain extends PApplet {
 			}
 		}
 
+		// draw start
+		fill(Color.YELLOW.getRGB());
+		ellipse(start.posX, start.posY, start.size, start.size);
+		ellipse(end.posX, end.posY, end.size, end.size);
+
 		// draw open / closed sets
 		for (Node n : openSet) {
 			n.draw(this, new Color(0, 120, 255));
@@ -188,6 +192,20 @@ public class AStarMain extends PApplet {
 		}
 
 		// draw solution
+		drawSolution();
+	}
+
+	private Node getLowestFScore(List<Node> list) {
+		Node lowestF = list.get(0);
+		for (Node n : list) {
+			if (n.f < lowestF.f) {
+				lowestF = n;
+			}
+		}
+		return lowestF;
+	}
+
+	private void drawSolution() {
 		Node prev = null;
 		for (Node n : solution) {
 			if (prev != null) {
@@ -204,7 +222,6 @@ public class AStarMain extends PApplet {
 			stroke(255, 100);
 			text("No solution found", width / 2, height / 2);
 		}
-
 	}
 
 	/**
