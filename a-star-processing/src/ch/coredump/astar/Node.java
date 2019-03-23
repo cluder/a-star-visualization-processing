@@ -13,7 +13,6 @@ public class Node {
 	float posY;
 	boolean blocked;
 
-	float size = 10;
 	// cost
 	float f = 0;
 	// cost from start
@@ -31,21 +30,23 @@ public class Node {
 	}
 
 	public void draw(PApplet p, Color c) {
-		final float cellWidth = p.width / AStarMain.ROWS;
-		final float cellheight = p.height / AStarMain.COLS;
+		final float cellWidth = p.width / AStarMain.COLS;
+		final float cellheight = p.height / AStarMain.ROWS;
 
 		p.push();
 
 		p.rectMode(PConstants.CENTER);
 		if (blocked) {
 			// simply a black rectangle
-			p.fill(170);
-			p.stroke(90);
-			p.rect(posX, posY, cellWidth * 0.9f, cellheight * 0.9f);
+			p.noStroke();
+			p.fill(255, 150);
+			p.rect(posX, posY, cellWidth * 0.8f, cellheight * 0.8f);
+			p.fill(255, 50);
+			p.rect(posX, posY, cellWidth * 0.95f, cellheight * 0.95f);
 		} else {
-			p.strokeWeight(2);
-			p.stroke(c.getRGB(), 100);
-			p.fill(c.getRGB(), 70);
+			p.strokeWeight(1);
+			p.stroke(c.getRGB());
+			p.fill(c.getRGB(), 100);
 			p.circle(posX, posY, cellWidth / 2);
 		}
 
